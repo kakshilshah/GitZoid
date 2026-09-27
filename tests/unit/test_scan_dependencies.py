@@ -439,3 +439,32 @@ react@^18.0.0:
         assert npm.count(("lodash", "4.17.20")) == 1           # shared pair once
         assert ("express", "4.18.2") in npm                    # from package-lock
         assert ("react", "18.2.5") in npm                      # from yarn.lock
+
+    YARN_BERRY_LOCK = '''__metadata:
+  version: 6
+  cacheKey: 8
+
+"lodash@npm:^4.17.20":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: abc
+  languageName: node
+  linkType: hard
+'''
+
+    BERRY_PACKAGE_JSON = '{"dependencies": {"lodash": "^4.17.0", "react": "^18.2.0"}}'
+
+    def test_yarn_berry_lockfile_falls_back_to_package_json(self, monkeypatch):
+        # Berry-format yarn.lock parses to zero entries under the v1-only parser. A lockfile
+        # that yields nothing must NOT suppress package.json for the same ecosystem, else the
+        # repo would be scanned as if it had no npm deps at all.
+        files = {"yarn.lock": self.YARN_BERRY_LOCK, "package.json": self.BERRY_PACKAGE_JSON}
+        monkeypatch.setattr(sd, "fetch_file",
+                            lambda repo, fname, branch, headers: files.get(fname))
+        deps, _ = collect_repo_dependencies("owner/repo", "main", {})
+        triples = {(d["name"], d["version"], d["ecosystem"]) for d in deps}
+        # package.json fallback took effect: range-stripped versions came through.
+        assert ("lodash", "4.17.0", "npm") in triples
+        assert ("react", "18.2.0", "npm") in triples
+        # And the Berry lock really did parse to nothing under the v1 parser.
+        assert ("lodash", "4.17.21", "npm") not in triples

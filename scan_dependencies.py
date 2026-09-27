@@ -439,9 +439,10 @@ def collect_repo_dependencies(repo_path, branch, headers):
         # skip a manifest if we already have a lockfile for the same ecosystem
         if not is_lock and any(found.get(e) == "lock" for e in [eco]):
             continue
-        for dep in parse_manifest(fname, content):
+        parsed = parse_manifest(fname, content)
+        for dep in parsed:
             found[(dep["name"], dep["version"], dep["ecosystem"])] = dep
-        if is_lock:
+        if is_lock and parsed:
             found[eco] = "lock"
     deps = [v for k, v in found.items() if isinstance(v, dict)]
     return deps[:MAX_DEPS_PER_REPO], content_hash("\n".join(sorted(raw_blobs)))
