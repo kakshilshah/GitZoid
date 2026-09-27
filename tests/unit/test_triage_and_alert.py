@@ -26,6 +26,8 @@ from triage_and_alert import (
     clean_email_list,
     group_alerts,
     MAX_CODE_ALERTS,
+    _CARD_RED,
+    _CARD_SLATE,
 )
 
 
@@ -454,12 +456,12 @@ class TestDependencySectionDesign:
 
     def test_dep_blocks_slate_code_blocks_red_and_after(self):
         out = build_alert_email([self._code()], [self._dep()], scanned_repos=1)
-        assert "border-left:4px solid #475569" in out      # dependency block = slate accent
-        assert "border-left:4px solid #b91c1c" in out      # code/access block = red accent
-        assert out.index("#b91c1c") < out.index("#475569")  # code section renders before deps
+        assert _CARD_SLATE in out                              # dependency block = slate card
+        assert _CARD_RED in out                                # code/access block = red card
+        assert out.index(_CARD_RED) < out.index(_CARD_SLATE)   # code section renders before deps
 
     def test_divider_only_when_both_sections_present(self):
-        rule = "height:1px;background:#e5e7eb"
+        rule = "height:1px;background:#E7E6E2"
         assert rule in build_alert_email([self._code()], [self._dep()], scanned_repos=1)
         assert rule not in build_alert_email([], [self._dep()], scanned_repos=1)   # deps-only: no stray rule
 
@@ -763,7 +765,7 @@ class TestGroupedDelivery:
             "github_selected_resources": [{"id": "o/a"}, {"id": "o/b"}],
             "security_groups": groups})
         assert len(sent) == 2
-        red = "border-left:4px solid #b91c1c"                          # one per rendered code block
+        red = _CARD_RED                                                # one per rendered code block
         per_email = [s["html_content"].count(red) for s in sent]
         assert all(c <= MAX_CODE_ALERTS for c in per_email)            # cap applies per group
         assert sum(per_email) > MAX_CODE_ALERTS                        # more shown than a single global cap
