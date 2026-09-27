@@ -280,6 +280,40 @@ class TestBrainAdapters:
         assert _format_brain_profile(None) == ""
 
 
+class TestSkipRunNoOp:
+    """Regression guard for the duplicate-comment bug: when skip_run="1", the driver must not call
+    the LLM and must not write pull_requests, even if a generated-but-unposted PR is still queued."""
+
+    def test_driver_no_ops_on_skip_run_with_pending_pr(self):
+        import importlib
+        import waveassist
+        import generate_review
+
+        pr = {"id": "o/r", "pr_number": 42, "comment_generated": True, "comment_posted": False,
+              "review_dict": {}, "review_type": "full", "files": []}
+        fetch_map = {"skip_run": "1", "pull_requests": [pr]}
+
+        def fetch(key=None, default=None, **k):
+            return fetch_map.get(key, default)
+
+        with patch.object(waveassist, "init", lambda *a, **k: None), \
+             patch.object(waveassist, "fetch_data") as fetch_mock, \
+             patch.object(waveassist, "store_data") as store_mock, \
+             patch.object(waveassist, "call_llm") as call_llm, \
+             patch.object(waveassist, "check_credits_and_notify", lambda *a, **k: True), \
+             patch("generate_review.requests"):
+            fetch_mock.side_effect = fetch
+            store_mock.return_value = True
+            importlib.reload(generate_review)
+
+        call_llm.assert_not_called()
+        stored_keys = [c.args[0] for c in store_mock.call_args_list if c.args]
+        stored_keys += [c.kwargs.get("key") for c in store_mock.call_args_list if not c.args]
+        assert "pull_requests" not in stored_keys
+        # The queued PR is left as-is for the next real cycle to post.
+        assert pr["comment_generated"] is True and pr["comment_posted"] is False
+
+
 class TestVerifyFailOpen:
     """Verification must DROP a finding only on an EXPLICIT refutation (is_real is False). A None or
     missing is_real (e.g. a null-filled LLM result) must fail OPEN and keep the finding."""
