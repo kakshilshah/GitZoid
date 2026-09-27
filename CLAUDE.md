@@ -195,9 +195,6 @@ digest_check_and_init → fetch_activity → analyze_activity → generate_techn
   (nothing is written back to the project), **hard-block GitHub writes**, and default email to
   **preview-only** (`--send` to actually send). They simulate the init node by injecting the resolved
   group set, so scan/audit/triage exercise the real run-based handoffs.
-- **Test gap:** no unit test asserting generate_review / post_comment no-op when `skip_run="1"` with
-  existing `pull_requests` data (the duplicate-comment regression guard).
-
 ---
 
 ## Infrastructure
