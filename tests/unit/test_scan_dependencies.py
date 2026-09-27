@@ -5,6 +5,7 @@ Covers the deterministic core: manifest/lockfile parsing, OSV query + response p
 CISA-KEV "actively exploited" matching, severity normalisation, brain reachability, the
 feed gate (what's allowed to reach the model), snapshot diffing.
 """
+import json
 import sys
 import os
 
@@ -124,6 +125,61 @@ class TestManifestDispatch:
 
     def test_bad_json_soft_fails(self):
         assert parse_manifest("package-lock.json", "{not json") == []
+
+
+class TestCollectRepoDependencies:
+    """collect_repo_dependencies fetches known manifests/lockfiles and merges into a deduped list.
+    A repo committing a yarn.lock must be scanned from the versions pinned in it, not from the
+    range specs in package.json; and duplicate name@version pairs across sibling npm lockfiles
+    must collapse to a single entry."""
+
+    def _fetch(self, files):
+        def _f(repo_path, filename, branch, headers):
+            return files.get(filename)
+        return _f
+
+    def test_yarn_lock_pins_win_over_package_json_ranges(self, monkeypatch):
+        yarn_lock = '''# yarn lockfile v1
+
+lodash@^4.17.15:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz"
+'''
+        package_json = json.dumps({"dependencies": {"lodash": "^4.17.15"}})
+        files = {"yarn.lock": yarn_lock, "package.json": package_json}
+        monkeypatch.setattr(sd, "fetch_file", self._fetch(files))
+
+        deps, _ = sd.collect_repo_dependencies("o/r", "main", {})
+
+        pairs = {(d["name"], d["version"]) for d in deps if d["ecosystem"] == "npm"}
+        assert ("lodash", "4.17.20") in pairs
+        assert ("lodash", "4.17.15") not in pairs
+
+    def test_common_pkg_across_yarn_and_npm_lock_appears_once(self, monkeypatch):
+        yarn_lock = '''# yarn lockfile v1
+
+lodash@^4.17.20:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz"
+'''
+        package_lock = json.dumps({"packages": {
+            "": {"name": "root"},
+            "node_modules/lodash": {"version": "4.17.20"},
+        }})
+        files = {"yarn.lock": yarn_lock, "package-lock.json": package_lock}
+        monkeypatch.setattr(sd, "fetch_file", self._fetch(files))
+
+        deps, _ = sd.collect_repo_dependencies("o/r", "main", {})
+
+        counts = {}
+        for d in deps:
+            if d["ecosystem"] != "npm":
+                continue
+            k = (d["name"], d["version"])
+            counts[k] = counts.get(k, 0) + 1
+        assert counts.get(("lodash", "4.17.20")) == 1
+        for k, c in counts.items():
+            assert c == 1, f"{k} appears {c} times"
 
 
 class TestOsvEcosystem:

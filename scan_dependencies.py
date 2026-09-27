@@ -53,7 +53,7 @@ MANIFEST_NAMES = {
     "requirements.txt": "pypi", "package.json": "npm",
 }
 # Files we fetch per repo, lockfiles first so they win over manifests for the same ecosystem.
-FETCH_ORDER = ["package-lock.json", "npm-shrinkwrap.json", "Pipfile.lock", "poetry.lock", "uv.lock",
+FETCH_ORDER = ["package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "Pipfile.lock", "poetry.lock", "uv.lock",
                "requirements.txt", "package.json"]
 
 _OSV_ECOSYSTEM = {

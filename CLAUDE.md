@@ -179,8 +179,6 @@ digest_check_and_init → fetch_activity → analyze_activity → generate_techn
 
 ## Known issues
 
-- **yarn.lock not scanned.** `yarn.lock` is in `LOCKFILE_NAMES` but missing from `FETCH_ORDER`, so Yarn
-  repos fall back to `package.json` (imprecise ranges → fewer OSV hits). Add it to `FETCH_ORDER`.
 - **scan_dependencies has no checkpointing.** A long scan killed by ECS auto-scaling restarts from the
   first repo. Per-repo checkpoint + resume would make restarts cheap.
 - **NodeRun stuck at STARTED.** When ECS kills a worker mid-task the run record never transitions out of
