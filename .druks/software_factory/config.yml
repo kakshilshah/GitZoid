@@ -1,5 +1,5 @@
 gates:
   plan_approval: machine_then_human  # the machine critic reviews the plan, then you approve it
-  implementation_approval: none      # the GitHub-review gate needs a webhook; a laptop has none
-on_approval: none                    # never auto-merge; the run ends with the PR open
+  implementation_approval: human     # the run parks until you review the PR on GitHub (webhook via the tunnel)
+on_approval: merge                   # when you Approve the PR on GitHub, Druks merges it; the ticket goes to Done
 delete_branch: true
