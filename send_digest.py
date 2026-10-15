@@ -1,5 +1,5 @@
 """
-send_digest.py — the Knowledge Digest chain's delivery node (node 6, per group).
+send_digest.py — deliver the digest email (E2E conflict 1 on main).
 
 Adapted from GitDigest's send_emails: the same combined HTML email (stats bar, summary, primary
 updates, repository deep dive, poem) plus a WeasyPrint PDF attachment, but fanned out PER resolved
