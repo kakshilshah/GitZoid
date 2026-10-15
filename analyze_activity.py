@@ -1,5 +1,5 @@
 """
-analyze_activity.py — the Knowledge Digest chain's diff analyzer (node 3).
+analyze_activity.py — per-repo diff summarizer for the weekly Knowledge Digest.
 
 Adapted from GitDigest's analyze_repository_activity. The three-tier token-splitting strategy is
 preserved exactly (it is the hard-won part): for each repo it fetches the real file diffs per commit
