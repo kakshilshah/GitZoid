@@ -1,5 +1,5 @@
 """
-post_comment.py — post the review to GitHub (E2E conflict on main).
+post_comment.py — publish each review as a GitHub PR review plus one editable summary comment.
 
 For each reviewed PR it posts inline, line-anchored comments (with committable suggestions) as one
 COMMENT review, plus a single human-readable summary comment that is EDITED IN PLACE on later
