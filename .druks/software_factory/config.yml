@@ -3,3 +3,5 @@ gates:
   implementation_approval: human     # the run parks until you review the PR on GitHub (webhook via the tunnel)
 on_approval: merge                   # when you Approve the PR on GitHub, Druks merges it; the ticket goes to Done
 delete_branch: true
+verification:                        # DRU-771 E2E push A: a pinned command shows the refresh read the push
+  test_commands: ["pytest -q"]
