@@ -3,3 +3,5 @@ gates:
   implementation_approval: none # DRU-614 E2E: the ungated approval path
 on_approval: merge              # Druks marks the PR ready and merges it
 delete_branch: true
+verification:                   # DRU-614 E2E: a check the sandbox cannot run, to get a BLOCKED evaluation
+  test_commands: ["dru614-e2e-unavailable-checker"]
