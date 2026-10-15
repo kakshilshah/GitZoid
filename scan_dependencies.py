@@ -1,5 +1,5 @@
 """
-scan_dependencies.py — GitZoid's daily dependency / supply-chain watch (Security chain, node 2).
+scan_dependencies.py — Security chain node 2: hydrates OSV hits, cross-checks CISA KEV, gates, and emits candidate findings.
 
 For each repo it reads the manifests + lockfiles, builds the list of packages actually installed,
 and matches them against the free public vulnerability database OSV.dev (no API key). Each hit is
