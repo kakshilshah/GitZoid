@@ -473,6 +473,44 @@ class TestDriverRobustness:
         assert store.get("run_lock") == {}                   # ...but the lock was still released
 
 
+class TestSkipRunNoOp:
+    """Regression guard for the duplicate-comment bug: when skip_run="1", run_driver must not touch
+    GitHub, must not clear pull_requests, must not write reviewed_prs, and must not release the lock
+    (a skipped cycle never wrote a token to release). It should mark the run idle."""
+
+    def test_run_driver_no_ops_on_skip_run_with_pending_pr(self):
+        pr = {"id": "o/r", "pr_number": 42, "comment_generated": True, "comment_posted": False,
+              "review_dict": {"findings": []}}
+        fetch_map = {
+            "skip_run": "1",
+            "pull_requests": [pr],
+            "run_lock_token": "",                          # skip cycle never wrote one
+            "run_lock": {"token": "T1"},                   # owned by another (real) run
+        }
+        wa = Mock()
+        wa.fetch_data.side_effect = lambda key=None, default=None, **k: fetch_map.get(key, default)
+        wa.store_data.return_value = True
+
+        with patch.object(post_comment, "waveassist", wa), \
+             patch("post_comment.requests.get") as rg, \
+             patch("post_comment.requests.post") as rp, \
+             patch("post_comment.requests.patch") as rpa:
+            run_driver()
+
+        rg.assert_not_called()
+        rp.assert_not_called()
+        rpa.assert_not_called()
+
+        stored_keys = [c.args[0] for c in wa.store_data.call_args_list if c.args]
+        stored_keys += [c.kwargs.get("key") for c in wa.store_data.call_args_list if not c.args]
+        assert "pull_requests" not in stored_keys        # queue preserved for the real run
+        assert "reviewed_prs" not in stored_keys         # no ledger write on skip
+        assert "run_lock" not in stored_keys             # no token → cannot release the holder's lock
+
+        wa.mark_run_idle.assert_called()
+        assert pr["comment_generated"] is True and not pr.get("comment_posted")
+
+
 class TestProcessOnePrPartialPost:
     """Review P2: if inline comments posted but the summary failed, record the ledger anyway so the
     already-posted inline comments are NOT re-posted as 'new' on the next run (no duplicates)."""
