@@ -1,4 +1,4 @@
-# Test Repo: GitZoid: Open Source AI Agent for GitHub
+# Test Repo for Druks
 
 **Reviews every pull request, watches your code for security issues, and emails a weekly summary of what shipped.**
 No noise, just what matters.
