@@ -1,5 +1,5 @@
 """
-fetch_activity.py — the Knowledge Digest chain's GitHub activity collector (node 2).
+fetch_activity.py — collect GitHub activity for the Knowledge Digest chain (node 2).
 
 Adapted from GitDigest's fetch_github_activity, kept faithful to the parts that work: a 7-day window,
 GraphQL active-branch detection (only branches with commits after `since`), REST commit fetch from
