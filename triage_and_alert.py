@@ -1,5 +1,5 @@
 """
-triage_and_alert.py — the single gatekeeper for everything Security (chain node 4).
+triage_and_alert.py — the Security gatekeeper (E2E conflict on main).
 
 Both scan_dependencies (daily) and deep_security_audit (weekly) append candidate findings to the
 run-based `security_candidates` key. This node is the ONE authority over what a user actually sees:
