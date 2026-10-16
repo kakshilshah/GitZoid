@@ -1,5 +1,5 @@
 """
-deep_security_audit.py — the weekly audit (E2E conflict on main).
+deep_security_audit.py — the weekly deep code audit, scoped to one brain (Security chain, node 3).
 
 It lives in the daily Security chain but only does work for a repo once every 7 days
 (self-throttled via `security_audit_state`, the study_repos pattern), processing repos
