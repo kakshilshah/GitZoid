@@ -1,5 +1,5 @@
 gates:
-  plan_approval: machine        # DRU-871 E2E: the machine critic reviews the plan once
-  implementation_approval: none # DRU-871 E2E: the ungated approval path
-on_approval: merge              # Druks marks the PR ready and merges it
+  plan_approval: machine_then_human  # the machine critic reviews the plan, then you approve it
+  implementation_approval: human     # the run parks until you review the PR on GitHub (webhook via the tunnel)
+on_approval: merge                   # when you Approve the PR on GitHub, Druks merges it; the ticket goes to Done
 delete_branch: true
